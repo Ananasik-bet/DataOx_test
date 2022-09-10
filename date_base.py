@@ -13,7 +13,7 @@ class Room(db.Document):
     date = db.StringField()
 
 
-def create_room(cost, image_url, date):
+def save_info_in_db(cost, image_url, date):
     room = Room(
         cost=cost, 
         image_url=image_url, 
