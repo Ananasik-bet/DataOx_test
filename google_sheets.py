@@ -1,32 +1,16 @@
-import httplib2
-import apiclient.discovery
-from oauth2client.service_account import ServiceAccountCredentials
+import gspread
 
-def write_into_sheets(spreadsheet_id, CREDENTIALS_FILE, data):
 
-    values = ["Image URL", "Post Date", "Price"]
-    for elem in data:
-        for index in range(3):
-            values.append(str(elem[index]))
+def write_into_sheets(credential_file, spreadsheets, list_sheets, data):
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        CREDENTIALS_FILE,
-        ['https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive']
+    data.insert(0, ["Image URL", "Post Date", "Price"])
+    
+
+    service_account = gspread.service_account(credential_file)
+    sheets = service_account.open(spreadsheets)
+
+    worksheet = sheets.worksheet(list_sheets)
+
+    worksheet.update(
+        f"A1:C{len(data) + 3}", data
     )
-    httpAuth = credentials.authorize(httplib2.Http())
-    service = apiclient.discovery.built('sheets', 'v4', http=httpAuth)
-
-    service.spreadsheets().values().batchUpdate(
-        spreadsheetsId = spreadsheet_id,
-        body = { 
-            "valueInputOption": "USER_ENTERED",
-            "data": [
-                {
-                    "range": f"A1:C{len(data) + 2}",
-                    "majorDimension": "ROWS",
-                    "values": values
-                }
-            ]
-        }
-    ).execute()
