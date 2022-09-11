@@ -1,6 +1,5 @@
 import mongoengine as db
 
-
 database_name = 'dataox'
 password = 'admin'
 DB_URI = 'mongodb+srv://Vlad:{}@dataox.einirwf.mongodb.net/{}?retryWrites=true&w=majority'\

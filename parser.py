@@ -1,9 +1,22 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+import dateparser
+
+def get_count(url):
+
+    # Find pages count
+    result = requests.get(url)
+    soup_result = BeautifulSoup(result.text, 'html.parser')
+    count = int(soup_result.find('head').find('title').text.split(' ')[-1])
+
+    # Generate URL for all pages
+    urls = [f'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/page-{page_index}/c37l1700273'\
+        for page_index in range(count)]
+
+    return urls
+
 
 def parse_url(url):
-
     r = requests.get(url)
 
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -17,16 +30,11 @@ def parse_url(url):
         image_url = elem.find('img').get('data-src')
 
         date_parse = elem.find('div', class_='location').find('span', class_="date-posted").text
-        if 'ago' in date_parse:
-            date_now = datetime.now()
-            if int(date_parse.split(' ')[1]) > date_now.hour:
-                yesterday = date_now - timedelta(days=1)
-                date = f"{yesterday.day}-{yesterday.month}-{yesterday.year}"
-            else:
-                date = f"{date_now.day}-{date_now.month}-{date_now.year}"
-        else:
+        if '/' in date_parse:
             date_parse = date_parse.split('/')
-            date = f"{date_parse[0]}-{date_parse[1]}-{date_parse[2]}"
+            date = f'{date_parse[0]}-{date_parse[1]}-{date_parse[2]}'
+        else:
+            date = dateparser.parse(date_parse).strftime("%d-%m-%Y")
 
         cost = elem.find('div', class_="price").text.replace(' ', '').replace('\n', '')
 
